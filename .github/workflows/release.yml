@@ -1,0 +1,47 @@
+name: Build & Release APK
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Extract version from build.gradle.kts
+        id: version
+        run: |
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' androidApp/build.gradle.kts)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build APK
+        run: ./gradlew :androidApp:assembleRelease
+
+      - name: Rename APK
+        run: |
+          mkdir -p release
+          cp androidApp/build/outputs/apk/release/androidApp-release-unsigned.apk \
+             release/wfh-${{ steps.version.outputs.version }}.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: release/wfh-${{ steps.version.outputs.version }}.apk
