@@ -1,0 +1,2 @@
+-dontwarn kotlinx.datetime.**
+-keep class com.weekchecker.** { *; }
