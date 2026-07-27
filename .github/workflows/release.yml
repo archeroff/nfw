@@ -20,17 +20,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
       - name: Extract version from build.gradle.kts
         id: version
         run: |
           VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' androidApp/build.gradle.kts)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Build APK
-        run: ./gradlew :androidApp:assembleRelease
+        run: gradle :androidApp:assembleRelease
 
       - name: Rename APK
         run: |
