@@ -1,3 +1,48 @@
-local.properties
+# Gradle
 .gradle/
 build/
+local.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin
+.kotlin/
+
+# Android
+androidApp/release/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# KMP / Xcode
+iosApp/DerivedData/
+iosApp/build/
+iosApp/Pods/
+iosApp/*.xcworkspace
+!iosApp/WeekChecker.xcodeproj
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Kotlin/Native
+.konan/
+
+# Compose
+compose-app/
