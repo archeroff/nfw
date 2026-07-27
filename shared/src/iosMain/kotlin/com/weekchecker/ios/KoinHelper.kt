@@ -1,6 +1,7 @@
 package com.weekchecker.ios
 
 import com.weekchecker.di.appModule
+import com.weekchecker.di.iosNotificationModule
 import com.weekchecker.presentation.screen.WeekViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -11,7 +12,7 @@ object KoinHelper : KoinComponent {
 
     fun initKoin() {
         startKoin {
-            modules(appModule)
+            modules(appModule, iosNotificationModule)
         }
     }
 }

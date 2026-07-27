@@ -2,6 +2,7 @@ package com.weekchecker.presentation.screen
 
 import androidx.lifecycle.ViewModel
 import com.weekchecker.domain.usecase.GetCurrentWeekUseCase
+import com.weekchecker.notification.NotificationScheduler
 import com.weekchecker.presentation.model.WeekUiState
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -11,7 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class WeekViewModel(
-    private val getCurrentWeekUseCase: GetCurrentWeekUseCase
+    private val getCurrentWeekUseCase: GetCurrentWeekUseCase,
+    private val notificationScheduler: NotificationScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<WeekUiState>(WeekUiState.Loading)
@@ -19,6 +21,7 @@ class WeekViewModel(
 
     init {
         refresh()
+        setupNotification()
     }
 
     fun refresh() {
@@ -33,6 +36,18 @@ class WeekViewModel(
             _uiState.value = WeekUiState.Error(
                 e.message ?: "An unexpected error occurred"
             )
+        }
+    }
+
+    private fun setupNotification() {
+        try {
+            if (notificationScheduler.hasPermission()) {
+                notificationScheduler.scheduleWeeklyNotification()
+            } else {
+                notificationScheduler.requestPermission()
+            }
+        } catch (_: Exception) {
+            // Notifications are optional - don't crash
         }
     }
 }

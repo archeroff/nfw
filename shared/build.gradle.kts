@@ -42,6 +42,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.androidx.core)
+            implementation(libs.koin.android)
         }
 
         commonTest.dependencies {
