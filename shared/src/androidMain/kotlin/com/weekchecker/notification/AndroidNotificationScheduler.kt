@@ -138,6 +138,11 @@ class AndroidNotificationScheduler(
         return "${date.dayOfMonth} $month ${date.year}"
     }
 
+    override fun sendTestNotification() {
+        val message = buildNotificationMessage()
+        showNotification("Week Checker (Test)", message)
+    }
+
     fun showNotification(title: String, message: String) {
         createNotificationChannel()
 

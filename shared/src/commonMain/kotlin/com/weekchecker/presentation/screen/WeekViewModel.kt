@@ -19,6 +19,9 @@ class WeekViewModel(
     private val _uiState = MutableStateFlow<WeekUiState>(WeekUiState.Loading)
     val uiState: StateFlow<WeekUiState> = _uiState.asStateFlow()
 
+    private val _showNextWeek = MutableStateFlow(true)
+    val showNextWeek: StateFlow<Boolean> = _showNextWeek.asStateFlow()
+
     init {
         refresh()
         setupNotification()
@@ -26,6 +29,18 @@ class WeekViewModel(
 
     fun refresh() {
         selectDate(null)
+    }
+
+    fun toggleNextWeek() {
+        _showNextWeek.value = !_showNextWeek.value
+    }
+
+    fun sendTestNotification() {
+        try {
+            notificationScheduler.sendTestNotification()
+        } catch (_: Exception) {
+            // Notifications are optional
+        }
     }
 
     fun selectDate(date: LocalDate?) {

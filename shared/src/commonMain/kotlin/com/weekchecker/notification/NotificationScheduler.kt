@@ -5,4 +5,5 @@ interface NotificationScheduler {
     fun cancelWeeklyNotification()
     fun hasPermission(): Boolean
     fun requestPermission()
+    fun sendTestNotification()
 }
