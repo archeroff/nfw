@@ -43,9 +43,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.weekchecker.presentation.model.WeekUiState
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.todayIn
 import kotlinx.datetime.toLocalDateTime
 
 @Composable
@@ -125,7 +129,7 @@ private fun WeekContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        WeekRangeSection(state = state)
+        WeekCalendar(weekStart = state.weekStart, accentColor = accentColor)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -151,15 +155,6 @@ private fun WeekContent(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-            text = "Next Week",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = weekColor(state.nextWeekIsEven)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         NextWeekCard(state = state)
 
@@ -312,54 +307,40 @@ private fun StatusChip(isEven: Boolean) {
 
 private val neutralColor = Color(0xFF1A1C19)
 
-@Composable
-private fun WeekRangeSection(state: WeekUiState.Success) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        DateLabel(
-            label = "Monday",
-            date = state.weekStart
-        )
-
-        Text(
-            text = "\u2193",
-            style = MaterialTheme.typography.titleLarge,
-            color = neutralColor,
-            modifier = Modifier.semantics {
-                contentDescription = "through"
-            }
-        )
-
-        DateLabel(
-            label = "Sunday",
-            date = state.weekEnd
-        )
-    }
-}
+private val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
 
 @Composable
-private fun DateLabel(label: String, date: LocalDate) {
+private fun WeekCalendar(weekStart: LocalDate, accentColor: Color) {
+    val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.semantics(mergeDescendants = true) {
-            contentDescription = "$label ${formatDate(date)}"
-        }
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium,
-            color = neutralColor,
-            modifier = Modifier.width(80.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = formatDate(date),
-            style = MaterialTheme.typography.bodyLarge,
-            color = neutralColor
-        )
+        for (i in 0..6) {
+            val day = weekStart.plus(i.toLong(), DateTimeUnit.DAY)
+            val isToday = day == today
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.semantics(mergeDescendants = true) {
+                    contentDescription = "${dayLabels[i]} ${day.dayOfMonth}"
+                }
+            ) {
+                Text(
+                    text = dayLabels[i],
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isToday) accentColor else neutralColor
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = day.dayOfMonth.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isToday) accentColor else neutralColor
+                )
+            }
+        }
     }
 }
 
