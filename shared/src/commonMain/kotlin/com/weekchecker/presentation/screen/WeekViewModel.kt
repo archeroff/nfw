@@ -5,6 +5,7 @@ import com.weekchecker.domain.usecase.GetCurrentWeekUseCase
 import com.weekchecker.notification.NotificationScheduler
 import com.weekchecker.presentation.model.WeekUiState
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +26,16 @@ class WeekViewModel(
     }
 
     fun refresh() {
+        selectDate(null)
+    }
+
+    fun selectDate(date: LocalDate?) {
         try {
-            val weekInfo = getCurrentWeekUseCase()
+            val weekInfo = if (date != null) {
+                getCurrentWeekUseCase(date)
+            } else {
+                getCurrentWeekUseCase()
+            }
             val now = Clock.System.now()
             val time = now.toLocalDateTime(TimeZone.currentSystemDefault()).let {
                 "%02d:%02d".format(it.hour, it.minute)

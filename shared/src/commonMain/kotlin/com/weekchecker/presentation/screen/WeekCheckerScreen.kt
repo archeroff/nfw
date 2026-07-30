@@ -13,20 +13,26 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -34,9 +40,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.weekchecker.presentation.model.WeekUiState
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun WeekCheckerScreen(viewModel: WeekViewModel) {
@@ -59,7 +67,7 @@ fun WeekCheckerScreen(viewModel: WeekViewModel) {
                 is WeekUiState.Loading -> LoadingContent()
                 is WeekUiState.Success -> WeekContent(
                     state = currentState,
-                    onRefresh = { viewModel.refresh() }
+                    onDateSelected = { viewModel.selectDate(it) }
                 )
                 is WeekUiState.Error -> ErrorContent(
                     message = currentState.message,
@@ -79,11 +87,15 @@ private fun LoadingContent() {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WeekContent(
     state: WeekUiState.Success,
-    onRefresh: () -> Unit
+    onDateSelected: (LocalDate) -> Unit
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val selectedDate = state.currentDate
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -108,24 +120,21 @@ private fun WeekContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = onRefresh,
+        OutlinedButton(
+            onClick = { showDatePicker = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .semantics { contentDescription = "Refresh week information" },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
+                .semantics { contentDescription = "Pick a date to check its week" }
         ) {
             Icon(
-                imageVector = Icons.Default.Refresh,
+                imageVector = Icons.Default.DateRange,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Refresh",
+                text = "Pick a date: ${formatDate(selectedDate)}",
                 style = MaterialTheme.typography.titleMedium
             )
         }
@@ -140,6 +149,35 @@ private fun WeekContent(
                 contentDescription = "Last updated at ${state.lastUpdatedTime}"
             }
         )
+    }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.toEpochDays() * 86400000L
+        )
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val instant = Instant.fromEpochMilliseconds(millis)
+                        val date = instant.toLocalDateTime(TimeZone.UTC).date
+                        onDateSelected(date)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 }
 
@@ -280,7 +318,7 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
-        Button(onClick = onRetry) {
+        TextButton(onClick = onRetry) {
             Text("Retry")
         }
     }
