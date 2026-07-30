@@ -1,6 +1,7 @@
 package com.weekchecker.presentation.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,9 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -68,28 +68,34 @@ fun WeekCheckerScreen(viewModel: WeekViewModel) {
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter
         ) {
-            when (val currentState = state) {
-                is WeekUiState.Loading -> LoadingContent()
-                is WeekUiState.Success -> WeekContent(
-                    state = currentState,
-                    showNextWeek = showNextWeek,
-                    onDateSelected = { viewModel.selectDate(it) },
-                    onToggleNextWeek = { viewModel.toggleNextWeek() },
-                    onSendTestNotification = { viewModel.sendTestNotification() }
-                )
-                is WeekUiState.Error -> ErrorContent(
-                    message = currentState.message,
-                    onRetry = { viewModel.refresh() }
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp)
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                when (val currentState = state) {
+                    is WeekUiState.Loading -> LoadingContent()
+                    is WeekUiState.Success -> WeekContent(
+                        state = currentState,
+                        showNextWeek = showNextWeek,
+                        onDateSelected = { viewModel.selectDate(it) },
+                        onToggleNextWeek = { viewModel.toggleNextWeek() },
+                        onSendTestNotification = { viewModel.sendTestNotification() }
+                    )
+                    is WeekUiState.Error -> ErrorContent(
+                        message = currentState.message,
+                        onRetry = { viewModel.refresh() }
+                    )
+                }
             }
         }
     }
@@ -107,9 +113,6 @@ private fun LoadingContent() {
 private fun weekColor(isEven: Boolean): Color =
     if (isEven) Color(0xFF2E7D32) else Color(0xFFC62828)
 
-private fun weekBgColor(isEven: Boolean): Color =
-    if (isEven) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
-
 @Composable
 private fun WeekContent(
     state: WeekUiState.Success,
@@ -124,17 +127,8 @@ private fun WeekContent(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "Week Checker",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
@@ -163,15 +157,11 @@ private fun WeekContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
         WeekInfoCard(state = state, accentColor = accentColor)
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         WeekCalendar(weekStart = state.weekStart, isEvenWeek = state.isEvenWeek)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedButton(
             onClick = { showDatePicker = true },
@@ -195,28 +185,9 @@ private fun WeekContent(
         }
 
         if (showNextWeek) {
-            Spacer(modifier = Modifier.height(32.dp))
-
             NextWeekCard(state = state)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedButton(
-            onClick = onSendTestNotification,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = null,
-                tint = accentColor,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Test Notification", color = accentColor)
-        }
     }
 
     if (showDatePicker) {
@@ -246,17 +217,15 @@ private fun WeekInfoCard(state: WeekUiState.Success, accentColor: Color) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = formatDate(state.currentDate),
                 style = MaterialTheme.typography.bodyLarge,
                 color = accentColor
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Week ${state.weekNumber}",
@@ -289,9 +258,9 @@ private fun NextWeekCard(state: WeekUiState.Success) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = "Next Week: ${formatDate(state.nextWeekStart)}",
@@ -308,8 +277,6 @@ private fun NextWeekCard(state: WeekUiState.Success) {
 
             StatusChip(isEven = state.nextWeekIsEven)
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             WeekCalendar(weekStart = state.nextWeekStart, isEvenWeek = state.nextWeekIsEven)
         }
     }
@@ -323,20 +290,32 @@ private fun StatusChip(isEven: Boolean) {
     ) {
         Text(
             text = if (isEven) "Work From Home" else "Work From Office",
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = weekColor(isEven)
         )
     }
 }
 
-private val neutralColor = Color(0xFF1A1C19)
 private val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
 private val green = Color(0xFF2E7D32)
 private val red = Color(0xFFC62828)
 
-private fun dayColor(index: Int, isEvenWeek: Boolean): Color {
+@Composable
+private fun neutralColor(): Color = MaterialTheme.colorScheme.onSurface
+
+@Composable
+private fun weekBgColor(isEven: Boolean): Color {
+    val isDark = isSystemInDarkTheme()
+    return if (isEven) {
+        if (isDark) Color(0xFF1B3A1E) else Color(0xFFE8F5E9)
+    } else {
+        if (isDark) Color(0xFF3A1B1B) else Color(0xFFFFEBEE)
+    }
+}
+
+private fun dayColor(index: Int, isEvenWeek: Boolean, neutral: Color): Color {
     val isGreen = if (isEvenWeek) {
         index == 0 || index == 3 || index == 4
     } else {
@@ -350,13 +329,14 @@ private fun dayColor(index: Int, isEvenWeek: Boolean): Color {
     return when {
         isGreen -> green
         isRed -> red
-        else -> neutralColor
+        else -> neutral
     }
 }
 
 @Composable
 private fun WeekCalendar(weekStart: LocalDate, isEvenWeek: Boolean) {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+    val neutral = neutralColor()
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -365,7 +345,7 @@ private fun WeekCalendar(weekStart: LocalDate, isEvenWeek: Boolean) {
         for (i in 0..6) {
             val day = weekStart.plus(i.toLong(), DateTimeUnit.DAY)
             val isToday = day == today
-            val color = dayColor(i, isEvenWeek)
+            val color = dayColor(i, isEvenWeek, neutral)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.semantics(mergeDescendants = true) {
@@ -492,8 +472,8 @@ private fun SimpleDatePickerDialog(
                                 if (isInMonth && dayDate != null) {
                                     Text(
                                         text = dayNumber.toString(),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = if (isSelected) Color.White else neutralColor,
+                                         style = MaterialTheme.typography.bodyMedium,
+                                        color = if (isSelected) Color.White else neutralColor(),
                                         fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
                                     )
                                 }

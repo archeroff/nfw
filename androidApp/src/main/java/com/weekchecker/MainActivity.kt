@@ -1,5 +1,6 @@
 package com.weekchecker
 
+import android.app.ActivityManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            setTaskDescription(ActivityManager.TaskDescription(null, R.mipmap.ic_launcher))
+        }
         setContent {
             WeekCheckerTheme {
                 WeekCheckerScreen(viewModel = weekViewModel)

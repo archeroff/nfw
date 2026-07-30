@@ -17,6 +17,8 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.plus
 import kotlinx.datetime.LocalDate
+import android.os.Handler
+import android.os.Looper
 import java.util.Calendar
 
 class AndroidNotificationScheduler(
@@ -37,7 +39,7 @@ class AndroidNotificationScheduler(
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, WeekNotificationReceiver::class.java).apply {
-            putExtra(EXTRA_TITLE, "Week Checker")
+            putExtra(EXTRA_TITLE, "W")
             putExtra(EXTRA_MESSAGE, buildNotificationMessage())
         }
         val pendingIntent = PendingIntent.getBroadcast(
@@ -107,7 +109,7 @@ class AndroidNotificationScheduler(
         val channel = NotificationChannel(
             CHANNEL_ID,
             "Weekly Week Notification",
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Notifies you every Sunday at 6pm about next week's type"
         }
@@ -125,7 +127,7 @@ class AndroidNotificationScheduler(
         val isEven = weekCalculator.isEvenWeek(nextWeekNumber)
         val status = if (isEven) "Work From Home" else "Work From Office"
         val dateStr = formatDateLong(nextMonday)
-        return "Tomorrow Monday $dateStr is $status!"
+        return "Monday $dateStr is $status!"
     }
 
     private fun formatDateLong(date: kotlinx.datetime.LocalDate): String {
@@ -140,7 +142,9 @@ class AndroidNotificationScheduler(
 
     override fun sendTestNotification() {
         val message = buildNotificationMessage()
-        showNotification("Week Checker (Test)", message)
+        Handler(Looper.getMainLooper()).postDelayed({
+            showNotification("W (Test)", message)
+        }, 3000)
     }
 
     fun showNotification(title: String, message: String) {
@@ -158,7 +162,7 @@ class AndroidNotificationScheduler(
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()

@@ -11,7 +11,7 @@ object Strings {
     }
 
     private val englishStrings = mapOf(
-        "app_title" to "Week Checker",
+        "app_title" to "W",
         "current_week" to "Current Week",
         "even_week" to "Even Week",
         "odd_week" to "Odd Week",
@@ -26,7 +26,7 @@ object Strings {
     )
 
     private val frenchStrings = mapOf(
-        "app_title" to "Vérificateur de Semaine",
+        "app_title" to "W",
         "current_week" to "Semaine actuelle",
         "even_week" to "Semaine paire",
         "odd_week" to "Semaine impaire",

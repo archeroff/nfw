@@ -33,7 +33,7 @@ class IosNotificationScheduler(
         center.removeAllPendingNotificationRequests()
 
         val content = UNMutableNotificationContent().apply {
-            setTitle("Week Checker")
+            setTitle("W")
             setBody(buildNotificationMessage())
             setBadge(1u)
             setSound(UNNotificationSound.defaultSound)
@@ -99,7 +99,7 @@ class IosNotificationScheduler(
         val isEven = weekCalculator.isEvenWeek(nextWeekNumber)
         val status = if (isEven) "Work From Home" else "Work From Office"
         val dateStr = formatDateLong(nextMonday)
-        return "Tomorrow Monday $dateStr is $status!"
+        return "Monday $dateStr is $status!"
     }
 
     private fun formatDateLong(date: kotlinx.datetime.LocalDate): String {

@@ -19,7 +19,7 @@ class WeekViewModel(
     private val _uiState = MutableStateFlow<WeekUiState>(WeekUiState.Loading)
     val uiState: StateFlow<WeekUiState> = _uiState.asStateFlow()
 
-    private val _showNextWeek = MutableStateFlow(true)
+    private val _showNextWeek = MutableStateFlow(false)
     val showNextWeek: StateFlow<Boolean> = _showNextWeek.asStateFlow()
 
     init {
