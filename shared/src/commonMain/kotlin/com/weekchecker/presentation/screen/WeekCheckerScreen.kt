@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -187,7 +188,7 @@ private fun WeekInfoCard(state: WeekUiState.Success) {
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {
-                contentDescription = "Week ${state.weekNumber}, ${state.statusText}"
+                contentDescription = "Week ${state.weekNumber}, ${if (state.isEvenWeek) "Work From Home" else "Work From Office"}"
             },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -224,28 +225,19 @@ private fun WeekInfoCard(state: WeekUiState.Success) {
 
 @Composable
 private fun StatusChip(isEven: Boolean) {
-    val containerColor = if (isEven) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.tertiaryContainer
-    }
-
-    val contentColor = if (isEven) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onTertiaryContainer
-    }
+    val backgroundColor = if (isEven) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+    val textColor = if (isEven) Color(0xFF2E7D32) else Color(0xFFC62828)
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = containerColor),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
         shape = MaterialTheme.shapes.medium
     ) {
         Text(
-            text = if (isEven) "Even Week" else "Odd Week",
+            text = if (isEven) "Work From Home" else "Work From Office",
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            color = contentColor
+            color = textColor
         )
     }
 }
