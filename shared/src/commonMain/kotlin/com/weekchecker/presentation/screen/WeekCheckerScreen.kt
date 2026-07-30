@@ -18,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -88,6 +89,12 @@ private fun LoadingContent() {
     )
 }
 
+private fun weekColor(isEven: Boolean): Color =
+    if (isEven) Color(0xFF2E7D32) else Color(0xFFC62828)
+
+private fun weekBgColor(isEven: Boolean): Color =
+    if (isEven) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WeekContent(
@@ -96,6 +103,7 @@ private fun WeekContent(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val selectedDate = state.currentDate
+    val accentColor = weekColor(state.isEvenWeek)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -113,7 +121,7 @@ private fun WeekContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        WeekInfoCard(state = state)
+        WeekInfoCard(state = state, accentColor = accentColor)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -131,30 +139,36 @@ private fun WeekContent(
             Icon(
                 imageVector = Icons.Default.DateRange,
                 contentDescription = null,
+                tint = accentColor,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "Pick a date: ${formatDate(selectedDate)}",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = accentColor
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Last updated: ${state.lastUpdatedTime}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.semantics {
-                contentDescription = "Last updated at ${state.lastUpdatedTime}"
-            }
-        )
     }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = selectedDate.toEpochDays() * 86400000L
+        )
+
+        val datePickerColors = DatePickerDefaults.colors(
+            selectedDayContainerColor = accentColor,
+            selectedDayContentColor = Color.White,
+            todayContentColor = accentColor,
+            todayDateBorderColor = accentColor,
+            navigationContentColor = accentColor,
+            subheadContentColor = accentColor,
+            yearContentColor = accentColor,
+            currentYearContentColor = Color.White,
+            selectedYearContainerColor = accentColor,
+            weekdayContentColor = accentColor,
+            dayContentColor = Color(0xFF1A1C19)
         )
 
         DatePickerDialog(
@@ -168,22 +182,23 @@ private fun WeekContent(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text("OK", color = accentColor)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = accentColor)
                 }
-            }
+            },
+            colors = datePickerColors
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(state = datePickerState, colors = datePickerColors)
         }
     }
 }
 
 @Composable
-private fun WeekInfoCard(state: WeekUiState.Success) {
+private fun WeekInfoCard(state: WeekUiState.Success, accentColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -206,7 +221,7 @@ private fun WeekInfoCard(state: WeekUiState.Success) {
             Text(
                 text = formatDate(state.currentDate),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = accentColor
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -215,7 +230,7 @@ private fun WeekInfoCard(state: WeekUiState.Success) {
                 text = "Week ${state.weekNumber}",
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = accentColor
             )
 
             StatusChip(isEven = state.isEvenWeek)
@@ -225,11 +240,8 @@ private fun WeekInfoCard(state: WeekUiState.Success) {
 
 @Composable
 private fun StatusChip(isEven: Boolean) {
-    val backgroundColor = if (isEven) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
-    val textColor = if (isEven) Color(0xFF2E7D32) else Color(0xFFC62828)
-
     Card(
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        colors = CardDefaults.cardColors(containerColor = weekBgColor(isEven)),
         shape = MaterialTheme.shapes.medium
     ) {
         Text(
@@ -237,10 +249,12 @@ private fun StatusChip(isEven: Boolean) {
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            color = textColor
+            color = weekColor(isEven)
         )
     }
 }
+
+private val neutralColor = Color(0xFF1A1C19)
 
 @Composable
 private fun WeekRangeSection(state: WeekUiState.Success) {
@@ -256,7 +270,7 @@ private fun WeekRangeSection(state: WeekUiState.Success) {
         Text(
             text = "\u2193",
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = neutralColor,
             modifier = Modifier.semantics {
                 contentDescription = "through"
             }
@@ -281,14 +295,14 @@ private fun DateLabel(label: String, date: LocalDate) {
             text = label,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = neutralColor,
             modifier = Modifier.width(80.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = formatDate(date),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = neutralColor
         )
     }
 }

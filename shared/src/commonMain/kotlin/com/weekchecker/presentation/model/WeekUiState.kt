@@ -11,20 +11,15 @@ sealed class WeekUiState {
         val isEvenWeek: Boolean,
         val currentDate: LocalDate,
         val weekStart: LocalDate,
-        val weekEnd: LocalDate,
-        val lastUpdatedTime: String
+        val weekEnd: LocalDate
     ) : WeekUiState() {
-        val statusText: String
-            get() = if (isEvenWeek) "Even Week" else "Odd Week"
-
         companion object {
-            fun from(weekInfo: WeekInfo, time: String): Success = Success(
+            fun from(weekInfo: WeekInfo): Success = Success(
                 weekNumber = weekInfo.weekNumber,
                 isEvenWeek = weekInfo.isEvenWeek,
                 currentDate = weekInfo.currentDate,
                 weekStart = weekInfo.weekStart,
-                weekEnd = weekInfo.weekEnd,
-                lastUpdatedTime = time
+                weekEnd = weekInfo.weekEnd
             )
         }
     }
