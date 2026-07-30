@@ -16,6 +16,7 @@ import com.weekchecker.data.calculator.WeekCalculator
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.plus
+import kotlinx.datetime.LocalDate
 import java.util.Calendar
 
 class AndroidNotificationScheduler(
@@ -122,11 +123,19 @@ class AndroidNotificationScheduler(
         )
         val nextWeekNumber = weekCalculator.isoWeekNumber(nextMonday)
         val isEven = weekCalculator.isEvenWeek(nextWeekNumber)
-        return if (isEven) {
-            "Next week (Week $nextWeekNumber) is an Even Week"
-        } else {
-            "Next week (Week $nextWeekNumber) is an Odd Week"
+        val status = if (isEven) "Work From Home" else "Work From Office"
+        val dateStr = formatDateLong(nextMonday)
+        return "Tomorrow Monday $dateStr is $status!"
+    }
+
+    private fun formatDateLong(date: kotlinx.datetime.LocalDate): String {
+        val month = when (date.monthNumber) {
+            1 -> "January"; 2 -> "February"; 3 -> "March"; 4 -> "April"
+            5 -> "May"; 6 -> "June"; 7 -> "July"; 8 -> "August"
+            9 -> "September"; 10 -> "October"; 11 -> "November"; 12 -> "December"
+            else -> ""
         }
+        return "${date.dayOfMonth} $month ${date.year}"
     }
 
     fun showNotification(title: String, message: String) {
