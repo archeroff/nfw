@@ -11,15 +11,21 @@ sealed class WeekUiState {
         val isEvenWeek: Boolean,
         val currentDate: LocalDate,
         val weekStart: LocalDate,
-        val weekEnd: LocalDate
+        val weekEnd: LocalDate,
+        val nextWeekNumber: Int,
+        val nextWeekIsEven: Boolean,
+        val nextWeekStart: LocalDate
     ) : WeekUiState() {
         companion object {
-            fun from(weekInfo: WeekInfo): Success = Success(
+            fun from(weekInfo: WeekInfo, nextWeekInfo: WeekInfo): Success = Success(
                 weekNumber = weekInfo.weekNumber,
                 isEvenWeek = weekInfo.isEvenWeek,
                 currentDate = weekInfo.currentDate,
                 weekStart = weekInfo.weekStart,
-                weekEnd = weekInfo.weekEnd
+                weekEnd = weekInfo.weekEnd,
+                nextWeekNumber = nextWeekInfo.weekNumber,
+                nextWeekIsEven = nextWeekInfo.isEvenWeek,
+                nextWeekStart = nextWeekInfo.weekStart
             )
         }
     }

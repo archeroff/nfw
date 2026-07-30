@@ -150,6 +150,19 @@ private fun WeekContent(
             )
         }
 
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = "Next Week",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = weekColor(state.nextWeekIsEven)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        NextWeekCard(state = state)
+
     }
 
     if (showDatePicker) {
@@ -234,6 +247,49 @@ private fun WeekInfoCard(state: WeekUiState.Success, accentColor: Color) {
             )
 
             StatusChip(isEven = state.isEvenWeek)
+        }
+    }
+}
+
+@Composable
+private fun NextWeekCard(state: WeekUiState.Success) {
+    val nextAccent = weekColor(state.nextWeekIsEven)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                contentDescription = "Next week ${state.nextWeekNumber}, ${if (state.nextWeekIsEven) "Work From Home" else "Work From Office"}"
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = formatDate(state.nextWeekStart),
+                style = MaterialTheme.typography.bodyLarge,
+                color = nextAccent
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Week ${state.nextWeekNumber}",
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+                color = nextAccent
+            )
+
+            StatusChip(isEven = state.nextWeekIsEven)
         }
     }
 }

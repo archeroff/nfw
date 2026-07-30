@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import com.weekchecker.domain.usecase.GetCurrentWeekUseCase
 import com.weekchecker.notification.NotificationScheduler
 import com.weekchecker.presentation.model.WeekUiState
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +35,9 @@ class WeekViewModel(
             } else {
                 getCurrentWeekUseCase()
             }
-            _uiState.value = WeekUiState.Success.from(weekInfo)
+            val nextMonday = weekInfo.weekStart.plus(7, DateTimeUnit.DAY)
+            val nextWeekInfo = getCurrentWeekUseCase(nextMonday)
+            _uiState.value = WeekUiState.Success.from(weekInfo, nextWeekInfo)
         } catch (e: Exception) {
             _uiState.value = WeekUiState.Error(
                 e.message ?: "An unexpected error occurred"
