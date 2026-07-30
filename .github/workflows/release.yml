@@ -32,16 +32,17 @@ jobs:
           if [ -z "$LATEST" ]; then
             NEXT="1.0.0"
           else
-            PATCH=${LATEST##*.}
-            MINOR=${LATEST%.*}
-            NEXT="${MINOR}.$((PATCH + 1))"
+            CLEAN="${LATEST#v}"
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CLEAN"
+            NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))"
           fi
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
 
       - name: Set version in build.gradle.kts
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          VERSION_CODE=$(echo "$VERSION" | tr '.' '+')
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          VERSION_CODE=$((MAJOR * 1000000 + MINOR * 1000 + PATCH))
           sed -i "s/versionCode = [0-9]*/versionCode = ${VERSION_CODE}/" androidApp/build.gradle.kts
           sed -i "s/versionName = \"[^\"]*\"/versionName = \"${VERSION}\"/" androidApp/build.gradle.kts
 
@@ -54,7 +55,7 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p release
-          cp androidApp/build/outputs/apk/release/androidApp-release-unsigned.apk \
+          cp androidApp/build/outputs/apk/release/androidApp-release.apk \
              release/wfh-${{ steps.version.outputs.version }}.apk
 
       - name: Create GitHub Release
