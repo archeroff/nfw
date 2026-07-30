@@ -129,7 +129,7 @@ private fun WeekContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        WeekCalendar(weekStart = state.weekStart, accentColor = accentColor)
+        WeekCalendar(weekStart = state.weekStart, isEvenWeek = state.isEvenWeek)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -309,8 +309,29 @@ private val neutralColor = Color(0xFF1A1C19)
 
 private val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
 
+private val green = Color(0xFF2E7D32)
+private val red = Color(0xFFC62828)
+
+private fun dayColor(index: Int, isEvenWeek: Boolean): Color {
+    val isGreen = if (isEvenWeek) {
+        index == 0 || index == 3 || index == 4
+    } else {
+        index == 3 || index == 4
+    }
+    val isRed = if (isEvenWeek) {
+        index == 1 || index == 2
+    } else {
+        index == 0 || index == 1 || index == 2
+    }
+    return when {
+        isGreen -> green
+        isRed -> red
+        else -> neutralColor
+    }
+}
+
 @Composable
-private fun WeekCalendar(weekStart: LocalDate, accentColor: Color) {
+private fun WeekCalendar(weekStart: LocalDate, isEvenWeek: Boolean) {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
 
     Row(
@@ -320,6 +341,7 @@ private fun WeekCalendar(weekStart: LocalDate, accentColor: Color) {
         for (i in 0..6) {
             val day = weekStart.plus(i.toLong(), DateTimeUnit.DAY)
             val isToday = day == today
+            val color = dayColor(i, isEvenWeek)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.semantics(mergeDescendants = true) {
@@ -330,14 +352,14 @@ private fun WeekCalendar(weekStart: LocalDate, accentColor: Color) {
                     text = dayLabels[i],
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
-                    color = if (isToday) accentColor else neutralColor
+                    color = color
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = day.dayOfMonth.toString(),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isToday) accentColor else neutralColor
+                    color = color
                 )
             }
         }
