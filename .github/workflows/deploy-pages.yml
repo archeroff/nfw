@@ -59,33 +59,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Ensure GitHub Pages is enabled
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          PAGES_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
-          AUTH=(-H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json")
-          get() { curl -s -w "\n%{http_code}" "${AUTH[@]}" "$PAGES_URL"; }
-          GET=$(get)
-          BODY="${GET%$'\n'*}"
-          CODE="${GET##*$'\n'}"
-          if [ "$CODE" = "200" ] && echo "$BODY" | grep -q '"build_type": "workflow"'; then
-            echo "GitHub Pages is already enabled (build_type=workflow)"
-            exit 0
-          fi
-          echo "GitHub Pages not ready (http ${CODE}) - attempting to enable via API..."
-          curl -s -X PUT "${AUTH[@]}" -d '{"build_type":"workflow"}' "$PAGES_URL"
-          echo ""
-          sleep 2
-          GET2=$(get)
-          CODE2="${GET2##*$'\n'}"
-          if [ "$CODE2" = "200" ]; then
-            echo "GitHub Pages enabled via API (build_type=workflow)"
-            exit 0
-          fi
-          echo "::error::Could not enable GitHub Pages automatically. Enable it manually at https://github.com/${GITHUB_REPOSITORY}/settings/pages (Build and deployment -> Source -> GitHub Actions), then re-run this workflow."
-          exit 1
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
 
       - name: Deploy
         id: deployment
