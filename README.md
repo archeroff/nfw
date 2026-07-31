@@ -167,7 +167,7 @@ the wasm site and publishes it to Cloudflare Pages on every push to `main`:
 2. In GitHub repo Settings → Secrets and variables → Actions, add:
    - Secret `CLOUDFLARE_API_TOKEN` — the token from step 1
    - Secret `CLOUDFLARE_ACCOUNT_ID` — your Cloudflare account ID
-   - Variable `CLOUDFLARE_PROJECT_NAME` — e.g. `w-week-checker`
+   - Variable `CLOUDFLARE_PROJECT_NAME` — e.g. `demain-sur-site`
 3. Push to `main` (or run the *Deploy web app to Cloudflare Pages* workflow manually)
 
 The site is published at `https://<project-name>.pages.dev` with HTTPS. The workflow
