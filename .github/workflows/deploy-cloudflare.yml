@@ -1,0 +1,58 @@
+name: Deploy web app to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build wasm distribution
+        run: ./gradlew :webApp:wasmJsBrowserDistribution --no-daemon
+
+      - name: Assemble deployable site
+        run: ./scripts/assemble-web.sh
+
+      - name: Smoke test deployable site
+        run: |
+          for f in index.html manifest.webmanifest sw.js styles.css webApp.js \
+                   icons/icon-192.png icons/icon-512.png icons/icon-512-maskable.png; do
+            test -f "build/web/$f" || { echo "Missing: $f"; exit 1; }
+          done
+          ls build/web/*.wasm >/dev/null || { echo "Missing wasm bundle"; exit 1; }
+          grep -q "serviceWorker" build/web/index.html || { echo "SW not registered"; exit 1; }
+          grep -q "w-cache-v" build/web/sw.js || { echo "SW cache version missing"; exit 1; }
+          echo "Smoke test passed"
+
+      - name: Ensure Cloudflare Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler pages project create "${{ vars.CLOUDFLARE_PROJECT_NAME }}" \
+            --production-branch=main || true
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy build/web --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

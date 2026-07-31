@@ -146,8 +146,8 @@ Assemble the deployable static site (the PWA) into `build/web/`:
 ```
 
 The entire `build/web/` directory is a self-contained static site (HTML, JS, wasm,
-manifest, service worker, icons) that can be hosted on GitHub Pages, Netlify, or Vercel
-with no server required.
+manifest, service worker, icons) that can be hosted on GitHub Pages, Cloudflare Pages,
+Netlify, or Vercel with no server required.
 
 ### Deploy to GitHub Pages
 
@@ -156,6 +156,22 @@ wasm site and publishes it to GitHub Pages on every push to `main`:
 
 1. In GitHub: Settings → Pages → Source → **GitHub Actions**
 2. Push to `main` (or run the *Deploy web app to GitHub Pages* workflow manually)
+
+### Deploy to Cloudflare Pages
+
+The repo ships a CI/CD workflow (`.github/workflows/deploy-cloudflare.yml`) that builds
+the wasm site and publishes it to Cloudflare Pages on every push to `main`:
+
+1. In the Cloudflare dashboard, create an API token with the
+   **Cloudflare Pages — Edit** permission: https://dash.cloudflare.com/profile/api-tokens
+2. In GitHub repo Settings → Secrets and variables → Actions, add:
+   - Secret `CLOUDFLARE_API_TOKEN` — the token from step 1
+   - Secret `CLOUDFLARE_ACCOUNT_ID` — your Cloudflare account ID
+   - Variable `CLOUDFLARE_PROJECT_NAME` — e.g. `w-week-checker`
+3. Push to `main` (or run the *Deploy web app to Cloudflare Pages* workflow manually)
+
+The site is published at `https://<project-name>.pages.dev` with HTTPS. The workflow
+creates the Pages project automatically if it does not exist yet.
 
 For other static hosts (Netlify, Vercel, ...), point the build command at
 `./gradlew :webApp:wasmJsBrowserDistribution && ./scripts/assemble-web.sh` and the
