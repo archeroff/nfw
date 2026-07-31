@@ -1,6 +1,11 @@
 package com.weekchecker.web
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import com.weekchecker.di.appModule
@@ -24,7 +29,13 @@ fun main() {
 @Composable
 fun App() {
     val viewModel: WeekViewModel = koinViewModel()
-    WeekCheckerTheme {
-        WeekCheckerScreen(viewModel = viewModel)
+    val systemDarkTheme = isSystemInDarkTheme()
+    var darkTheme by remember { mutableStateOf(systemDarkTheme) }
+    WeekCheckerTheme(darkTheme = darkTheme) {
+        WeekCheckerScreen(
+            viewModel = viewModel,
+            darkTheme = darkTheme,
+            onToggleDarkTheme = { darkTheme = !darkTheme }
+        )
     }
 }

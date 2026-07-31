@@ -19,9 +19,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -60,7 +62,11 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 
 @Composable
-fun WeekCheckerScreen(viewModel: WeekViewModel) {
+fun WeekCheckerScreen(
+    viewModel: WeekViewModel,
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    onToggleDarkTheme: (() -> Unit)? = null
+) {
     val state by viewModel.uiState.collectAsState()
     val showNextWeek by viewModel.showNextWeek.collectAsState()
 
@@ -87,6 +93,8 @@ fun WeekCheckerScreen(viewModel: WeekViewModel) {
                     is WeekUiState.Success -> WeekContent(
                         state = currentState,
                         showNextWeek = showNextWeek,
+                        darkTheme = darkTheme,
+                        onToggleDarkTheme = onToggleDarkTheme,
                         onDateSelected = { viewModel.selectDate(it) },
                         onToggleNextWeek = { viewModel.toggleNextWeek() },
                         onSendTestNotification = { viewModel.sendTestNotification() }
@@ -117,6 +125,8 @@ private fun weekColor(isEven: Boolean): Color =
 private fun WeekContent(
     state: WeekUiState.Success,
     showNextWeek: Boolean,
+    darkTheme: Boolean,
+    onToggleDarkTheme: (() -> Unit)?,
     onDateSelected: (LocalDate) -> Unit,
     onToggleNextWeek: () -> Unit,
     onSendTestNotification: () -> Unit
@@ -129,6 +139,21 @@ private fun WeekContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            if (onToggleDarkTheme != null) {
+                IconButton(onClick = onToggleDarkTheme) {
+                    Icon(
+                        imageVector = if (darkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = if (darkTheme) "Switch to light mode" else "Switch to dark mode",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
@@ -157,7 +182,7 @@ private fun WeekContent(
             }
         }
 
-        WeekInfoCard(state = state, accentColor = accentColor)
+        WeekInfoCard(state = state, accentColor = accentColor, isDark = darkTheme)
 
         WeekCalendar(weekStart = state.weekStart, isEvenWeek = state.isEvenWeek)
 
@@ -185,7 +210,7 @@ private fun WeekContent(
         }
 
         if (showNextWeek) {
-            NextWeekCard(state = state)
+            NextWeekCard(state = state, isDark = darkTheme)
         }
 
     }
@@ -201,7 +226,7 @@ private fun WeekContent(
 }
 
 @Composable
-private fun WeekInfoCard(state: WeekUiState.Success, accentColor: Color) {
+private fun WeekInfoCard(state: WeekUiState.Success, accentColor: Color, isDark: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -234,13 +259,13 @@ private fun WeekInfoCard(state: WeekUiState.Success, accentColor: Color) {
                 color = accentColor
             )
 
-            StatusChip(isEven = state.isEvenWeek)
+            StatusChip(isEven = state.isEvenWeek, isDark = isDark)
         }
     }
 }
 
 @Composable
-private fun NextWeekCard(state: WeekUiState.Success) {
+private fun NextWeekCard(state: WeekUiState.Success, isDark: Boolean) {
     val nextAccent = weekColor(state.nextWeekIsEven)
 
     Card(
@@ -275,7 +300,7 @@ private fun NextWeekCard(state: WeekUiState.Success) {
                 color = nextAccent
             )
 
-            StatusChip(isEven = state.nextWeekIsEven)
+            StatusChip(isEven = state.nextWeekIsEven, isDark = isDark)
 
             WeekCalendar(weekStart = state.nextWeekStart, isEvenWeek = state.nextWeekIsEven)
         }
@@ -283,9 +308,9 @@ private fun NextWeekCard(state: WeekUiState.Success) {
 }
 
 @Composable
-private fun StatusChip(isEven: Boolean) {
+private fun StatusChip(isEven: Boolean, isDark: Boolean) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = weekBgColor(isEven)),
+        colors = CardDefaults.cardColors(containerColor = weekBgColor(isEven, isDark)),
         shape = MaterialTheme.shapes.medium
     ) {
         Text(
@@ -306,8 +331,7 @@ private val red = Color(0xFFC62828)
 private fun neutralColor(): Color = MaterialTheme.colorScheme.onSurface
 
 @Composable
-private fun weekBgColor(isEven: Boolean): Color {
-    val isDark = isSystemInDarkTheme()
+private fun weekBgColor(isEven: Boolean, isDark: Boolean): Color {
     return if (isEven) {
         if (isDark) Color(0xFF1B3A1E) else Color(0xFFE8F5E9)
     } else {
