@@ -23,3 +23,4 @@ rootProject.name = "WeekChecker"
 
 include(":shared")
 include(":androidApp")
+include(":webApp")

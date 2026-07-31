@@ -1,6 +1,6 @@
 # Week Checker
 
-A Kotlin Multiplatform Mobile application that determines whether the current calendar week is **Even** or **Odd**, following the ISO-8601 standard.
+A Kotlin Multiplatform application that determines whether the current calendar week is **Even** or **Odd**, following the ISO-8601 standard. Ships as an Android app, an iOS app, and a **web app / PWA** (Kotlin/Wasm + Compose Multiplatform) that deploys to any free static host.
 
 ## Features
 
@@ -12,6 +12,7 @@ A Kotlin Multiplatform Mobile application that determines whether the current ca
 - English and French localization
 - Fully offline, no network required
 - Clean Architecture with MVVM pattern
+- Web: installable PWA with offline support (service worker + manifest)
 
 ## Tech Stack
 
@@ -49,7 +50,8 @@ WeekChecker/
 │   │   │   └── util/Strings.kt
 │   │   ├── commonTest/            # Shared unit tests
 │   │   ├── androidMain/           # Android-specific (dynamic colors)
-│   │   └── iosMain/               # iOS-specific (Koin init, entry point)
+│   │   ├── iosMain/               # iOS-specific (Koin init, entry point)
+│   │   └── wasmJsMain/            # Web-specific (notifications via Web Notifications API)
 │   └── build.gradle.kts
 ├── androidApp/                    # Android application
 │   ├── src/main/
@@ -59,9 +61,15 @@ WeekChecker/
 │   │   │   └── WeekCheckerApp.kt
 │   │   └── res/
 │   └── build.gradle.kts
+├── webApp/                        # Web / PWA application (Kotlin/Wasm)
+│   └── src/wasmJsMain/
+│       ├── kotlin/com/weekchecker/web/App.kt
+│       └── resources/             # index.html, styles.css, manifest, sw.js, icons
 ├── iosApp/                        # iOS SwiftUI wrapper
 │   └── WeekChecker/
 │       └── WeekCheckerApp.swift
+├── scripts/assemble-web.sh        # Assembles the deployable static site
+├── .github/workflows/deploy-pages.yml  # GitHub Pages CI/CD
 ├── gradle/libs.versions.toml      # Version catalog
 ├── build.gradle.kts
 ├── settings.gradle.kts
@@ -91,7 +99,7 @@ The project follows **Clean Architecture** with three layers:
 
 - **Android**: Android Studio Ladybug (2024.2+) with JDK 17
 - **iOS**: Xcode 16+ with Kotlin CocoaPods plugin
-- **Both**: JDK 17
+- **Web**: JDK 17 (Node.js is used by the wasm bundle build)
 
 ## Build & Run
 
@@ -116,6 +124,42 @@ Or via command line:
 cd WeekChecker
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 ```
+
+### Web / PWA
+
+Build the wasm distribution:
+
+```bash
+./gradlew :webApp:wasmJsBrowserDistribution
+```
+
+Run a local dev server:
+
+```bash
+./gradlew :webApp:wasmJsBrowserDevelopmentRun
+```
+
+Assemble the deployable static site (the PWA) into `build/web/`:
+
+```bash
+./scripts/assemble-web.sh
+```
+
+The entire `build/web/` directory is a self-contained static site (HTML, JS, wasm,
+manifest, service worker, icons) that can be hosted on GitHub Pages, Cloudflare Pages,
+Vercel, or Netlify with no server required.
+
+### Deploy to GitHub Pages
+
+The repo ships a CI/CD workflow (`.github/workflows/deploy-pages.yml`) that builds the
+wasm site and publishes it to GitHub Pages on every push to `main`:
+
+1. In GitHub: Settings → Pages → Source → **GitHub Actions**
+2. Push to `main` (or run the *Deploy web app to GitHub Pages* workflow manually)
+
+For Cloudflare Pages / Netlify / Vercel, point the build command at
+`./gradlew :webApp:wasmJsBrowserDistribution && ./scripts/assemble-web.sh` and the
+publish/output directory at `build/web`.
 
 ### Run Tests
 
