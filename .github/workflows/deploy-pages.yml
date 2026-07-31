@@ -36,6 +36,17 @@ jobs:
       - name: Assemble deployable site
         run: ./scripts/assemble-web.sh
 
+      - name: Smoke test deployable site
+        run: |
+          for f in index.html manifest.webmanifest sw.js styles.css webApp.js \
+                   icons/icon-192.png icons/icon-512.png icons/icon-512-maskable.png; do
+            test -f "build/web/$f" || { echo "Missing: $f"; exit 1; }
+          done
+          ls build/web/*.wasm >/dev/null || { echo "Missing wasm bundle"; exit 1; }
+          grep -q "serviceWorker" build/web/index.html || { echo "SW not registered"; exit 1; }
+          grep -q "w-cache-v" build/web/sw.js || { echo "SW cache version missing"; exit 1; }
+          echo "Smoke test passed"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
