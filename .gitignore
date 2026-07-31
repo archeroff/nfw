@@ -47,3 +47,6 @@ iosApp/*.xcworkspace
 
 # Compose
 compose-app/
+
+# Cloudflare
+.wrangler/
